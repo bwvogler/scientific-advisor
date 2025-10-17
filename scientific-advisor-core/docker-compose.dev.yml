@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  core:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+      - ./prompts:/app/prompts
+      - ./config:/app/config
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - CHROMA_DB_PATH=/app/data/chroma_db
+      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+      - LLM_MODEL=llama3:8b
+    depends_on:
+      - ollama
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    command: serve
+
+volumes:
+  ollama_data:
